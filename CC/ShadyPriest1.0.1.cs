@@ -188,6 +188,15 @@ namespace ShadyForm
                     return;
                 }
             }
+            
+            if (this.Player.GetSpellRank("Vampiric Embrace") != 0)
+            {
+                if (!this.Target.GotDebuff("Vampiric Embrace"))
+                {
+                    this.Player.StopWand();
+                    this.Player.Cast("Vampiric Embrace");
+                }
+            }
 
             if (this.Player.HealthPercent <= 35)
             {
