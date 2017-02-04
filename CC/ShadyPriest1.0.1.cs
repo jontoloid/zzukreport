@@ -1,4 +1,3 @@
-<<<<<<< HEAD
 using System;
 using System.Collections;
 using System.Collections.Generic;
@@ -21,7 +20,7 @@ to uh.. Emu? for providing the original EmuPriest.
 
 */
 
-namespace something
+namespace ShadyForm
 {
     public class ShadyForm : CustomClass
     {
@@ -39,7 +38,7 @@ namespace something
         {
             get
             {
-                return "Shadyform 1";
+                return "Shadyform 1.0.1";
             }
         }
 
@@ -127,7 +126,6 @@ namespace something
             }
         }
 
-
         public override void PreFight()
         {
             //You can change this value if you have specced into Shadow Reach: 1/3 = 30*1.06 = 32 , 2/3 = 30*1.13 = 34 , 3/3 = 30*1.2 = 36
@@ -165,7 +163,6 @@ namespace something
             {
                 this.Player.Cast("Smite");
             }
-
         }
 
         public override void Fight()
