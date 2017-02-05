@@ -12,6 +12,8 @@ This does currently not offer any amazing features like automated talenting or a
 
 * **If** I ever figure this out, fixing the wand-attack spamming that cancels itself out
 * Usage of Scrolls
+* Dispel annoying debuffs / cure annoying diseases (in Rest phase most likely.)
+* DoTing up multiple enemies
 * Massive code cleanup
 * Addition of a separate, pre-40/Shadowform+Mindflay version of this (it exists, but it is an absolute mess.)
 
