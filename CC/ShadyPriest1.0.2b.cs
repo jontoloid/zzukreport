@@ -38,7 +38,7 @@ namespace ShadyForm
         {
             get
             {
-                return "Shadyform 1.0.2b";
+                return "Shadyform 1.0.2";
             }
         }
 
@@ -121,6 +121,22 @@ namespace ShadyForm
                 this.Player.UseItem("Minor Mana Potion");
         }
 
+        public void SilenceEnemy()
+        {   //Checking, if the enemy is casting any kind of spell or channeled ability
+            if (this.Target.IsCasting != "" || this.Target.IsChanneling != "")
+            {	// checking, if you are specced into Silence
+                if (this.Player.GetSpellRank("Silence") != 0)
+                {	//Off CD?
+                    if (this.Player.CanUse("Silence"))
+                    {
+                        this.Player.StopCasting();
+                        this.Player.Cast("Silence");
+                        return;
+                    }
+                }
+            }
+        }
+
         public void MultipleEnemies()
         {
            if (this.Player.GetSpellRank("Psychic Scream") != 0 && this.Attackers.Count >= 2 && this.Player.CanUse("Psychic Scream") && this.Player.ManaPercent >= 30)
@@ -189,6 +205,7 @@ namespace ShadyForm
                 this.Player.Cast("Shadowform");
             }
 
+            SilenceEnemy();
             
             if (this.Player.GetSpellRank("Shadow Word: Pain") != 0 && this.Target.HealthPercent >= 5 && this.Player.ManaPercent >= 10)
             {
@@ -341,3 +358,4 @@ namespace ShadyForm
         }
     }
 }
+
