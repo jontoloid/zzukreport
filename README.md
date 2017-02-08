@@ -20,6 +20,7 @@ This does currently not offer any amazing features like automated talenting or a
 ## Known issues
 
 * Wanding. Just about everything about wanding, after being stunned or disarmed, it goes to fuck more often than not.
+* Silence seems to be used at random (maybe when instant casts happen?). Going to look into a way to fix this, otherwise you can just turn it off.
 * all the things
 
 ###**Enjoy!**
