@@ -49,8 +49,10 @@ namespace ShadyForm
         //for example: 65 for mind flay until the enemy has 65% health, wanding from then on.
         //I feel like this is highly subjective and depends on how much time you want to spend drinking / how good your wand damage is,
         //so play around with it to figure something out that suits your character.
+	//You can replace the useSilence value with false if you do not wish to use silence _AT ALL_.
 
         int healthP = 65;
+	bool useSilence = true;
 
 
 
@@ -204,9 +206,12 @@ namespace ShadyForm
             {
                 this.Player.Cast("Shadowform");
             }
-
+		
+		//Checking whether Silence has been configured to use
+	    if (useSilence)
+	    {
             SilenceEnemy();
-            
+            }   
             if (this.Player.GetSpellRank("Shadow Word: Pain") != 0 && this.Target.HealthPercent >= 5 && this.Player.ManaPercent >= 10)
             {
                 if (!this.Target.GotDebuff("Shadow Word: Pain"))
