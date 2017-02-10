@@ -1,6 +1,6 @@
 # ShadyPriest
 
-a zzukBot CC for Shadow Priests **and pure wand spamming!** from Level 1 onwards. This CC makes use of Mind Flay and Shadowform while also wanding for quite a big portion.
+a zzukBot CC for Shadow Priests **and pure wand spamming!** from Level 1 onwards. This CC makes use of Mind Flay and Shadowform (if available) while also wanding for quite a big portion.
 This does currently not offer any amazing features like automated talenting or anything along the lines, here is a list of the features.
 
 * Health- and Manapotion usage
@@ -16,6 +16,7 @@ This does currently not offer any amazing features like automated talenting or a
 * DoTing up multiple enemies
 * Massive code cleanup. _Currenty in the process of doing so, bear with me please_
 *  ~~Addition of a separate, pre-40/Shadowform+Mindflay version of this (it exists, but it is an absolute mess.)~~ It's out! 1.0.3a
+* Automated talenting.
 
 ## Known issues
 
