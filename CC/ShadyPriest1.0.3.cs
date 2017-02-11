@@ -79,25 +79,25 @@ namespace ShadyForm
        }
 
 
+        
         public void gotWand()
         {
-        
-	        if (useShadowForm)
+        	if (useShadowForm)
 	        {
-				if (this.Player.ManaPercent < 10 || this.Target.HealthPercent < healthP)
+			if (this.Player.ManaPercent < 10 || this.Target.HealthPercent < healthP)
 	        	{
-	            	if (this.Player.IsChanneling != "Mind Flay" && this.Player.IsCasting != "Mind Flay")
-	            	{
+	            		if (this.Player.IsChanneling != "Mind Flay" && this.Player.IsCasting != "Mind Flay")
+	            		{
 	                	this.Player.StartWand();
 	                	return;
-	            	}
+	            		}
 	           		
-	            }
-	            else
-	            {
-	            	this.Player.StartWand();
-	            }
+	           	 }
 	        } 
+	        else
+	        {
+	            this.Player.StartWand();
+	        }
 	    }
 
 	    public void noWand()
