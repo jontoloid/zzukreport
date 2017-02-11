@@ -65,7 +65,7 @@ namespace ShadyForm
 
        	public string[] nastyDiseases = {};
 
-       	public string[] nastyDebuffs = {};
+       	public string[] nastyDebuffs = {"Soul Siphon", };
 
        
        public void dispelDiseases()
@@ -79,26 +79,23 @@ namespace ShadyForm
        }
 
 
-        
         public void gotWand()
         {
-        	if (useShadowForm)
+        
+	        if (useShadowForm)
 	        {
-			if (this.Player.ManaPercent < 10 || this.Target.HealthPercent < healthP)
+				if (this.Player.ManaPercent < 10 || this.Target.HealthPercent < healthP)
 	        	{
-	            		if (this.Player.IsChanneling != "Mind Flay" && this.Player.IsCasting != "Mind Flay")
-	            		{
+	            	if (this.Player.IsChanneling != "Mind Flay" && this.Player.IsCasting != "Mind Flay")
+	            	{
 	                	this.Player.StartWand();
 	                	return;
-	            		}
+	            	}
 	           		
-	           	 }
+	            }
 	        } 
-	        else
-	        {
-	            this.Player.StartWand();
-	        }
-	    }
+			this.Player.StartWand();
+		}
 
 	    public void noWand()
 	    {
@@ -213,17 +210,109 @@ namespace ShadyForm
             {
                 this.Player.Cast("Devouring Plague"); 
             }
-           /* if (this.Player.GetSpellRank("Renew") != 0 && this.Attackers.Count >= 2 && this.Player.ManaPercent >= 50 && this.Player.HealthPercent <= 80 && !this.Player.GotBuff("Renew"))
+           if (this.Player.GetSpellRank("Renew") != 0 && this.Attackers.Count >= 2 && this.Player.ManaPercent >= 50 && this.Player.HealthPercent <= 80 && !this.Player.GotBuff("Renew") && !useShadowForm)
             {
                 this.Player.CastWait("Renew", 1000);
-            } */
+            } 
+        }
+
+        public void OffensiveSpells() 
+        {
+
+        	if (!this.Player.GotBuff("Shadowform") && this.Player.GetSpellRank("Shadowform") != 0)
+            {
+                this.Player.Cast("Shadowform");
+            }
+
+            if (this.Player.GetSpellRank("Shadow Word: Pain") != 0 && this.Target.HealthPercent >= 5 && this.Player.ManaPercent >= 10)
+            {
+                if (!this.Target.GotDebuff("Shadow Word: Pain"))
+                {
+                    
+                    this.Player.Cast("Shadow Word: Pain");
+                    return;
+                }
+            }
+
+            if (this.Player.GetSpellRank("Berserking") != 0 && this.Player.CanUse("Berserking"))
+            {
+            	this.Player.TryCast("Berserking");
+            }
+
+            if (this.Target.HealthPercent > 95 && this.Player.GetSpellRank("Mind Blast") != 0 && this.Player.CanUse("Mind Blast"))
+            {	//In case we bodypull / get a second enemy while fighting, the precast mind blast wont happen.
+            	this.Player.Cast("Mind Blast");
+            }
+
+			if (this.Player.GetSpellRank("Vampiric Embrace") != 0)
+            {
+                if (!this.Target.GotDebuff("Vampiric Embrace"))
+                {
+                    
+                    this.Player.Cast("Vampiric Embrace");
+                }
+            }
+
+            if (this.Player.GetSpellRank("Mind Flay") != 0)
+            {
+                if (this.Player.CanUse("Mind Flay") && this.Target.HealthPercent >= healthP && this.Player.IsChanneling != "Mind Flay" && this.Player.IsCasting != "Mind Flay" && this.Player.ManaPercent >= 10)
+                {
+                    //this.Player.StopWand();
+                    this.Player.CastWait("Mind Flay", 2500);
+                    return;
+                }
+            }
+
+        }
+
+        public void DefensiveSpells()
+        {
+        	if (this.Player.GetSpellRank("Power Word: Shield") != 0)
+            {
+                if (!this.Player.GotBuff("Power Word: Shield") && !this.Player.GotDebuff("Weakened Soul") && this.Player.IsChanneling != "Mind Flay" && this.Player.IsCasting != "Mind Flay" && this.Player.ManaPercent >= 10)
+                {
+                    
+                    this.Player.Cast("Power Word: Shield");
+                }
+            }
+			if (this.Player.HealthPercent <= 35)
+            {
+                
+                if (this.Player.GetSpellRank("Flash Heal") != 0 && this.Player.ManaPercent >= 60)
+                {
+                	this.Player.StopWand();
+                    if (this.Player.GotBuff("Shadowform"))
+                    {
+ 						this.Player.Cast("Shadowform");
+                    }
+                   
+                    this.Player.CastWait("Flash Heal", 1000);
+                }
+                else
+                {
+                	if (this.Player.GetSpellRank("Heal") != 0)
+                    {
+                    	this.Player.CastWait("Heal", 1000);
+                    }
+                    this.Player.CastWait("Lesser Heal", 1000);
+                }
+                return;
+            }
+
+            if (this.Player.GetSpellRank("Inner Fire") != 0)
+            {
+                if (!Player.GotBuff("Inner Fire"))
+                {
+                    this.Player.Cast("Inner Fire");
+                    return;
+                }
+            }
         }
 
         public override void PreFight()
         {
             //You can change this value if you have specced into Shadow Reach: 1/3 = 30*1.06 = 32 , 2/3 = 30*1.13 = 34 , 3/3 = 30*1.2 = 36
             this.SetCombatDistance(30);
-            this.Player.Attack();
             
             if (!this.Player.GotBuff("Shadowform") && this.Player.CanUse("Shadowform"))
             {
@@ -265,104 +354,26 @@ namespace ShadyForm
             SelectMPotion();
             SelectHPotion();
 
-             if (!this.Player.GotBuff("Shadowform") && this.Player.GetSpellRank("Shadowform") != 0)
-            {
-                this.Player.Cast("Shadowform");
-            }
-
            if (useSilence)
            {
            	SilenceEnemy();
            }
-            
-            if (this.Player.GetSpellRank("Shadow Word: Pain") != 0 && this.Target.HealthPercent >= 5 && this.Player.ManaPercent >= 10)
-            {
-                if (!this.Target.GotDebuff("Shadow Word: Pain"))
-                {
-                    this.Player.StopWand();
-                    this.Player.Cast("Shadow Word: Pain");
-                    return;
-                }
-            }
 
-			if (this.Player.GetSpellRank("Vampiric Embrace") != 0)
-            {
-                if (!this.Target.GotDebuff("Vampiric Embrace"))
-                {
-                    this.Player.StopWand();
-                    this.Player.Cast("Vampiric Embrace");
-                }
-            }
+           OffensiveSpells();
+           DefensiveSpells();
 
-            if (this.Player.HealthPercent <= 35)
-            {
-                this.Player.StopWand();
-                if (this.Player.GetSpellRank("Flash Heal") != 0 && this.Player.ManaPercent >= 60 && this.Player.HealthPercent <= 35)
-                {
-                    if (this.Player.GotBuff("Shadowform"))
-                    {
- 					this.Player.Cast("Shadowform");
-                    }
-                   
-                    this.Player.CastWait("Flash Heal", 1000);
-                }
-                else
-                {
-                	if (this.Player.GetSpellRank("Heal") != 0)
-                    {
-                    	this.Player.CastWait("Heal", 1000);
-                    }
-                    this.Player.CastWait("Lesser Heal", 1000);
-                }
-                return;
-            }
-
-            if (this.Player.GetSpellRank("Power Word: Shield") != 0)
-            {
-                if (!this.Player.GotBuff("Power Word: Shield") && !this.Player.GotDebuff("Weakened Soul") && this.Player.IsChanneling != "Mind Flay" && this.Player.IsCasting != "Mind Flay" && this.Player.ManaPercent >= 10)
-                {
-                    this.Player.StopWand();
-                    this.Player.Cast("Power Word: Shield");
-                }
-            }
-
-            if (this.Player.GetSpellRank("Inner Fire") != 0)
-            {
-                if (!Player.GotBuff("Inner Fire"))
-                {
-                    this.Player.StopWand();
-                    this.Player.Cast("Inner Fire");
-                    return;
-                }
-            }
-            
-            this.Player.TryCast("Berserking");
-
-            if (this.Player.GetSpellRank("Mind Flay") != 0)
-            {
-                if (this.Player.CanUse("Mind Flay") && this.Target.HealthPercent >= healthP && this.Player.IsChanneling != "Mind Flay" && this.Player.IsCasting != "Mind Flay" && this.Player.ManaPercent >= 10)
-                {
-                    this.Player.StopWand();
-                    this.Player.CastWait("Mind Flay", 2500);
-                    return;
-                }
-            }
-
-            if (canWand)
-            {
-            	gotWand();
-            }
-            else
-            {
+           if (canWand)
+           {
+           		gotWand();
+           }
+           else
+           {
             	noWand();
-            }
+           }
            
         }
             
-            
-     
-
-        public override void Rest()
+		public override void Rest()
         {
 
             if (this.Player.ManaPercent < 20 & !this.Player.GotBuff("Drink"))
@@ -432,3 +443,4 @@ namespace ShadyForm
         }
     }
 }
+
