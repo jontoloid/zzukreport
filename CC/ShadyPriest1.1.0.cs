@@ -39,7 +39,7 @@ namespace ShadyForm
         {
             get
             {
-                return "Shadyform 1.0.4";
+                return "Shadyform 1.1.0";
             }
         }
 
@@ -404,7 +404,7 @@ namespace ShadyForm
            }
 
            
-           if (canWand == true && useWand == true)
+           if (canWand == true && useWand == true && this.Player.CanUse("Shadow Word: Pain") && this.Player.IsCasting == "" && this.Player.IsChanneling == "")
            {
            		gotWand();
            }
