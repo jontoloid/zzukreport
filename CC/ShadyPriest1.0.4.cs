@@ -5,7 +5,8 @@ using System.Linq;
 using ZzukBot.Engines.CustomClass;
 using ZzukBot.Engines.CustomClass.Objects;
 
-/*Original CC by EmuPriest, list of changes and additions:
+/*
+Original CC by EmuPriest, list of changes and additions:
 -added Mind Blast support [on pull]
 -multiple add handling behaviour (in line with this goes the usage of devouring plague, if you are undead)
 -drink selection
@@ -38,23 +39,29 @@ namespace ShadyForm
         {
             get
             {
-                return "Shadyform 1.0.3a";
+                return "Shadyform 1.0.4";
             }
         }
 
-
-
-
-        //Change this value to determine the point at which you want to stop using mind flay and start wanding.
-        //for example: 65 for mind flay until the enemy has 65% health, wanding from then on.
-        //I feel like this is highly subjective and depends on how much time you want to spend drinking / how good your wand damage is,
-        //so play around with it to figure something out that suits your character.
-        //Change useShadowform to true in case you have specced into it.
-        //Change useSilence to true in case you have specced into it / want to use it.
+		/*
+		Change this value to determine the point at which you want to stop using mind flay and start wanding.
+        for example: 65 for mind flay until the enemy has 65% health, wanding from then on.
+        I feel like this is highly subjective and depends on how much time you want to spend drinking / how good your wand damage is,
+        so play around with it to figure something out that suits your character.
+        Change useShadowForm to true in case you have specced into it.
+        Change useSilence to true in case you have specced into it / want to use it.
+        useWand should never have to be changed, this was kind of experimental. The no-wand logic will still trigger with this set to true.
+        Do NOT set debug to true unless you want your ingame chat to be spammed with status messages. I use this to figure out confilcting conditions.
+        (Like why on earth the character starts trying to spam wand before the DoTs are even finished applying)
+        */
 
         int healthP = 65;
         bool useSilence = false;
         bool useShadowForm = false;
+        bool debug = false;
+        bool useVEmb = false;
+        bool useWand = true;
+        bool useTouchOfWeakness = false;
 
 
 
@@ -78,6 +85,40 @@ namespace ShadyForm
 
        }
 
+       public void pullPriority()
+       {
+       	 if (useShadowForm == true && !this.Player.GotBuff("Shadowform") && this.Player.CanUse("Shadowform"))
+            {
+                this.Player.Cast("Shadowform");
+            }
+            	/*For those with touch of weakness*/
+            if (useTouchOfWeakness == true && this.Player.GetSpellRank("Touch of Weakness") != 0)
+            {
+                if (!this.Player.GotBuff("Touch of Weakness"))
+                {
+                    this.Player.Cast("Touch of Weakness");
+                }
+            }
+            	/*looking for a couple of spells to pull with*/
+            if (this.Player.GetSpellRank("Mind Blast") != 0)
+            {
+                if (this.Player.CanUse("Mind Blast"))
+                {
+                    this.Player.Cast("Mind Blast");
+                }
+            }
+            else if (this.Player.GetSpellRank("Shadow Word: Pain") != 0)
+            {
+                if (!Target.GotDebuff("Shadow Word: Pain"))
+                {
+                    this.Player.Cast("Shadow Word: Pain");
+                }
+            }
+            else
+            {	// to ensure this works from level 1.
+                this.Player.Cast("Smite");
+            }
+		}
 
         public void gotWand()
         {
@@ -88,17 +129,29 @@ namespace ShadyForm
 	        	{
 	            	if (this.Player.IsChanneling != "Mind Flay" && this.Player.IsCasting != "Mind Flay")
 	            	{
+	            		if(debug==true)
+	            		{
+	            			this.Player.DoString("OutPut1 = 'Starting to Wand'");
+	            			this.Player.DoString("DEFAULT_CHAT_FRAME:AddMessage('trying to start wanding with shadowform')");
+	            		}
 	                	this.Player.StartWand();
-	                	return;
 	            	}
 	           		
 	            }
 	        } 
+	        if(debug==true)
+	            {
+	            	this.Player.DoString("DEFAULT_CHAT_FRAME:AddMessage('trying to start wanding without SForm')");
+	            }
 			this.Player.StartWand();
 		}
 
 	    public void noWand()
 	    {
+	    	if(debug==true)
+	            {
+	            	this.Player.DoString("DEFAULT_CHAT_FRAME:AddMessage('no wand present! attacking otherwise')");
+	            }
 	    	if (this.Player.ManaPercent > 50)
 	    	{
 	    		this.Player.Cast("Smite");
@@ -218,160 +271,151 @@ namespace ShadyForm
 
         public void OffensiveSpells() 
         {
+        	if (!this.Target.GotDebuff("Shadow Word: Pain") ||
+        		(this.Player.CanUse("Mind Flay") && this.Target.HealthPercent >= healthP) ||
+        		(this.Player.CanUse("Vampiric Embrace") && !this.Target.GotDebuff("Vampiric Embrace")) ||
+        		(this.Target.HealthPercent > 95 && this.Player.CanUse("Mind Blast")))
+        	{
+        		if(debug==true)
+	            	{
+	            		this.Player.DoString("DEFAULT_CHAT_FRAME:AddMessage('trying to reapply dots')");
+	            	}
+	        	if (!this.Player.GotBuff("Shadowform") && this.Player.GetSpellRank("Shadowform") != 0)
+	            {
+	                this.Player.Cast("Shadowform");
+	            }
 
-        	if (!this.Player.GotBuff("Shadowform") && this.Player.GetSpellRank("Shadowform") != 0)
-            {
-                this.Player.Cast("Shadowform");
-            }
+	            if (this.Player.GetSpellRank("Shadow Word: Pain") != 0 && this.Target.HealthPercent >= 5 && this.Player.ManaPercent >= 10)
+	            {
+	                if (!this.Target.GotDebuff("Shadow Word: Pain"))
+	                {
+	                    
+	                    this.Player.Cast("Shadow Word: Pain");
+	                }
+	            }
 
-            if (this.Player.GetSpellRank("Shadow Word: Pain") != 0 && this.Target.HealthPercent >= 5 && this.Player.ManaPercent >= 10)
-            {
-                if (!this.Target.GotDebuff("Shadow Word: Pain"))
-                {
-                    
-                    this.Player.Cast("Shadow Word: Pain");
-                    return;
-                }
-            }
+	            if (this.Player.GetSpellRank("Berserking") != 0 && this.Player.CanUse("Berserking"))
+	            {
+	            	this.Player.TryCast("Berserking");
+	            }
 
-            if (this.Player.GetSpellRank("Berserking") != 0 && this.Player.CanUse("Berserking"))
-            {
-            	this.Player.TryCast("Berserking");
-            }
+	            if (this.Target.HealthPercent > 95 && this.Player.GetSpellRank("Mind Blast") != 0 && this.Player.CanUse("Mind Blast"))
+	            {	//In case we bodypull / get a second enemy while fighting, the precast mind blast wont happen.
+	            	this.Player.Cast("Mind Blast");
+	            }
 
-            if (this.Target.HealthPercent > 95 && this.Player.GetSpellRank("Mind Blast") != 0 && this.Player.CanUse("Mind Blast"))
-            {	//In case we bodypull / get a second enemy while fighting, the precast mind blast wont happen.
-            	this.Player.Cast("Mind Blast");
-            }
+	            if(useVEmb == true)
+	            {
+					if (this.Player.GetSpellRank("Vampiric Embrace") != 0)
+		            {
+		                if (!this.Target.GotDebuff("Vampiric Embrace"))
+		                {
+		                    
+		                    this.Player.Cast("Vampiric Embrace");
+		                }
+		            }
+	        	}
 
-			if (this.Player.GetSpellRank("Vampiric Embrace") != 0)
-            {
-                if (!this.Target.GotDebuff("Vampiric Embrace"))
-                {
-                    
-                    this.Player.Cast("Vampiric Embrace");
-                }
-            }
-
-            if (this.Player.GetSpellRank("Mind Flay") != 0)
-            {
-                if (this.Player.CanUse("Mind Flay") && this.Target.HealthPercent >= healthP && this.Player.IsChanneling != "Mind Flay" && this.Player.IsCasting != "Mind Flay" && this.Player.ManaPercent >= 10)
-                {
-                    //this.Player.StopWand();
-                    this.Player.CastWait("Mind Flay", 2500);
-                    return;
-                }
-            }
-
+	            if (this.Player.GetSpellRank("Mind Flay") != 0 && useShadowForm == true)
+	            {
+	                if (this.Player.CanUse("Mind Flay") && this.Target.HealthPercent >= healthP && this.Player.IsChanneling != "Mind Flay" && this.Player.IsCasting != "Mind Flay" && this.Player.ManaPercent >= 10)
+	                {
+	                    //this.Player.StopWand();
+	                    this.Player.CastWait("Mind Flay", 2500);
+	                }
+	            }
+	        }
         }
 
         public void DefensiveSpells()
         {
-        	if (this.Player.GetSpellRank("Power Word: Shield") != 0)
-            {
-                if (!this.Player.GotBuff("Power Word: Shield") && !this.Player.GotDebuff("Weakened Soul") && this.Player.IsChanneling != "Mind Flay" && this.Player.IsCasting != "Mind Flay" && this.Player.ManaPercent >= 10)
-                {
-                    
-                    this.Player.Cast("Power Word: Shield");
-                }
-            }
-			if (this.Player.HealthPercent <= 35)
-            {
-                
-                if (this.Player.GetSpellRank("Flash Heal") != 0 && this.Player.ManaPercent >= 60)
-                {
-                	this.Player.StopWand();
-                    if (this.Player.GotBuff("Shadowform"))
-                    {
- 						this.Player.Cast("Shadowform");
-                    }
-                   
-                    this.Player.CastWait("Flash Heal", 1000);
-                }
-                else
-                {
-                	if (this.Player.GetSpellRank("Heal") != 0)
-                    {
-                    	this.Player.CastWait("Heal", 1000);
-                    }
-                    this.Player.CastWait("Lesser Heal", 1000);
-                }
-                return;
-            }
 
-            if (this.Player.GetSpellRank("Inner Fire") != 0)
-            {
-                if (!Player.GotBuff("Inner Fire"))
-                {
-                    this.Player.Cast("Inner Fire");
-                    return;
-                }
-            }
+        	if((!this.Player.GotBuff("Power Word: Shield") && !this.Player.GotDebuff("Weakened Soul")) ||
+        		this.Player.HealthPercent <= 35 ||
+        		!this.Player.GotBuff("Inner Fire"))
+        	{
+        		
+        		if(debug==true)
+	            	{
+	            		this.Player.DoString("DEFAULT_CHAT_FRAME:AddMessage('trying to reapply shield or heal')");
+	            	}
+	        	if (this.Player.GetSpellRank("Power Word: Shield") != 0)
+	            {
+	                if (!this.Player.GotBuff("Power Word: Shield") && !this.Player.GotDebuff("Weakened Soul") && this.Player.IsChanneling != "Mind Flay" && this.Player.IsCasting != "Mind Flay" && this.Player.ManaPercent >= 10)
+	                {
+	                    
+	                    this.Player.Cast("Power Word: Shield");
+	                }
+	            }
+
+				if (this.Player.HealthPercent <= 35)
+	            {
+	            	if (this.Player.GetSpellRank("Flash Heal") != 0 && this.Player.ManaPercent >= 60)
+	                {
+	                	if (this.Player.GotBuff("Shadowform"))
+	                    {
+	 						this.Player.Cast("Shadowform");
+	                    }
+	                   
+	                    this.Player.CastWait("Flash Heal", 1000);
+	                }
+	                else
+	                {
+	                	if (this.Player.GetSpellRank("Heal") != 0)
+	                    {
+	                    	this.Player.CastWait("Heal", 1000);
+	                    }
+	                    this.Player.CastWait("Lesser Heal", 1000);
+	                }
+	            }
+
+	            if (this.Player.GetSpellRank("Inner Fire") != 0)
+	            {
+	                if (!Player.GotBuff("Inner Fire"))
+	                {
+	                    this.Player.Cast("Inner Fire");
+	                }
+	            }
+        	}
         }
 
         public override void PreFight()
         {
             //You can change this value if you have specced into Shadow Reach: 1/3 = 30*1.06 = 32 , 2/3 = 30*1.13 = 34 , 3/3 = 30*1.2 = 36
             this.SetCombatDistance(30);
-            
-            if (!this.Player.GotBuff("Shadowform") && this.Player.CanUse("Shadowform"))
-            {
-                this.Player.Cast("Shadowform");
-            }
-            	/*For those with touch of weakness*/
-            if (this.Player.GetSpellRank("Touch of Weakness") != 0)
-            {
-                if (!this.Player.GotBuff("Touch of Weakness"))
-                {
-                    this.Player.Cast("Touch of Weakness");
-                }
-            }
-            if (this.Player.GetSpellRank("Mind Blast") != 0)
-            {
-                if (this.Player.CanUse("Mind Blast"))
-                {
-                    this.Player.Cast("Mind Blast");
-                }
-            }
-            else if (this.Player.GetSpellRank("Shadow Word: Pain") != 0)
-            {
-                if (!Target.GotDebuff("Shadow Word: Pain"))
-                {
-                    this.Player.Cast("Shadow Word: Pain");
-                }
-            }
-            else
-            {	// to ensure this works from level 1.
-                this.Player.Cast("Smite");
-            }
+            pullPriority();
+           
         }
 
         public override void Fight()
         {
             
             bool canWand = this.Player.IsWandEquipped();
+
             MultipleEnemies();
+            OffensiveSpells();
+           	DefensiveSpells();
             SelectMPotion();
             SelectHPotion();
 
-           if (useSilence)
+           if (useSilence == true)
            {
            	SilenceEnemy();
            }
 
-           OffensiveSpells();
-           DefensiveSpells();
-
-           if (canWand)
+           
+           if (canWand == true && useWand == true)
            {
            		gotWand();
            }
-           else
+
+           if (canWand == false || useWand == false)
            {
-            	noWand();
+           		noWand();
            }
            
         }
+
             
 		public override void Rest()
         {
