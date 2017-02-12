@@ -16,6 +16,7 @@ Original CC by EmuPriest, list of changes and additions:
 CREDITS
 to krycess for his CasinoFury2, I have taken his approach to handling adds and selecting drinks and implemented those in here.
 to uh.. Emu? for providing the original EmuPriest.
+to Fedelis for his FedLock - it seems his approach of GCD checking via CanUse has fixed my wanding issue.
 
 
 
@@ -450,7 +451,7 @@ namespace ShadyForm
 
         public override bool Buff()
         {
-            if (this.Player.GetSpellRank("Touch of Weakness") != 0)
+            if (this.Player.GetSpellRank("Touch of Weakness") != 0 && useTouchOfWeakness == true)
             {
                 if (!this.Player.GotBuff("Touch of Weakness"))
                 {
