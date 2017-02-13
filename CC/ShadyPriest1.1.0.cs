@@ -100,6 +100,14 @@ namespace ShadyForm
                     this.Player.Cast("Touch of Weakness");
                 }
             }
+	    
+	    /* ensuring that PW:S is up on pull*/
+	    
+	    if(this.Player.GetSpellRank("Power Word Shield") != 0 && !this.Player.GotDebuff("Weakened Soul") && !this.Player.GotBuff("Power Word: Shield"))
+	    {
+	    	this.Player.Cast("Power Word:Shield");
+	    }
+	    
             	/*looking for a couple of spells to pull with*/
             if (this.Player.GetSpellRank("Mind Blast") != 0)
             {
@@ -394,8 +402,8 @@ namespace ShadyForm
             bool canWand = this.Player.IsWandEquipped();
 
             MultipleEnemies();
+	    DefensiveSpells();
             OffensiveSpells();
-           	DefensiveSpells();
             SelectMPotion();
             SelectHPotion();
 
