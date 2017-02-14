@@ -17,9 +17,6 @@ CREDITS
 to krycess for his CasinoFury2, I have taken his approach to handling adds and selecting drinks and implemented those in here.
 to uh.. Emu? for providing the original EmuPriest.
 to Fedelis for his FedLock - it seems his approach of GCD checking via CanUse has fixed my wanding issue.
-
-
-
 */
 
 namespace ShadyForm
@@ -88,27 +85,6 @@ namespace ShadyForm
 
        public void pullPriority()
        {
-       	 if (useShadowForm == true && !this.Player.GotBuff("Shadowform") && this.Player.CanUse("Shadowform"))
-            {
-                this.Player.Cast("Shadowform");
-            }
-            	/*For those with touch of weakness*/
-            if (useTouchOfWeakness == true && this.Player.GetSpellRank("Touch of Weakness") != 0)
-            {
-                if (!this.Player.GotBuff("Touch of Weakness"))
-                {
-                    this.Player.Cast("Touch of Weakness");
-                }
-            }
-	    
-	    /* ensuring that PW:S is up on pull*/
-	    
-	    if(this.Player.GetSpellRank("Power Word Shield") != 0 && !this.Player.GotDebuff("Weakened Soul") && !this.Player.GotBuff("Power Word: Shield"))
-	    {
-	    	this.Player.Cast("Power Word:Shield");
-	    }
-	    
-            	/*looking for a couple of spells to pull with*/
             if (this.Player.GetSpellRank("Mind Blast") != 0)
             {
                 if (this.Player.CanUse("Mind Blast"))
@@ -279,7 +255,12 @@ namespace ShadyForm
         }
 
         public void OffensiveSpells() 
-        {
+        {   //Make sure to have PW:S up before trying any funky attack stuff after pulling
+            if (!this.Player.GotBuff("Power Word Shield") && !this.Player.GotDebuff("Weakened Soul") && this.Player.CanUse("Power Word:Shield"))
+            {
+                this.Player.Cast("Power Word:Shield");
+            }
+
         	if (!this.Target.GotDebuff("Shadow Word: Pain") ||
         		(this.Player.CanUse("Mind Flay") && this.Target.HealthPercent >= healthP) ||
         		(this.Player.CanUse("Vampiric Embrace") && !this.Target.GotDebuff("Vampiric Embrace")) ||
@@ -303,7 +284,7 @@ namespace ShadyForm
 	                }
 	            }
 
-	            if (this.Player.GetSpellRank("Berserking") != 0 && this.Player.CanUse("Berserking"))
+	            if (this.Player.CanUse("Berserking"))
 	            {
 	            	this.Player.TryCast("Berserking");
 	            }
@@ -491,9 +472,16 @@ namespace ShadyForm
                     return false;
                 }
             }
+
+            if (useShadowForm == true && !this.Player.GotBuff("Shadowform") && this.Player.CanUse("Shadowform"))
+            {
+                this.Player.Cast("Shadowform");
+                return false;
+            }
+                
+            
             //True means we are done buffing, or cannot buff
             return true;
         }
     }
 }
-
