@@ -17,6 +17,9 @@ CREDITS
 to krycess for his CasinoFury2, I have taken his approach to handling adds and selecting drinks and implemented those in here.
 to uh.. Emu? for providing the original EmuPriest.
 to Fedelis for his FedLock - it seems his approach of GCD checking via CanUse has fixed my wanding issue.
+
+
+
 */
 
 namespace ShadyForm
@@ -55,7 +58,7 @@ namespace ShadyForm
 
         int healthP = 65;
         bool useSilence = false;
-        bool useShadowForm = false;
+        bool useShadowForm = true;
         bool debug = false;
         bool useVEmb = false;
         bool useWand = true;
@@ -261,11 +264,11 @@ namespace ShadyForm
                 this.Player.Cast("Power Word:Shield");
             }
 
-        	if (!this.Target.GotDebuff("Shadow Word: Pain") ||
+        	/*if (!this.Target.GotDebuff("Shadow Word: Pain") ||
         		(this.Player.CanUse("Mind Flay") && this.Target.HealthPercent >= healthP) ||
         		(this.Player.CanUse("Vampiric Embrace") && !this.Target.GotDebuff("Vampiric Embrace")) ||
         		(this.Target.HealthPercent > 95 && this.Player.CanUse("Mind Blast")))
-        	{
+        	{*/
         		if(debug==true)
 	            	{
 	            		this.Player.DoString("DEFAULT_CHAT_FRAME:AddMessage('trying to reapply dots')");
@@ -275,7 +278,7 @@ namespace ShadyForm
 	                this.Player.Cast("Shadowform");
 	            }
 
-	            if (this.Player.GetSpellRank("Shadow Word: Pain") != 0 && this.Target.HealthPercent >= 5 && this.Player.ManaPercent >= 10)
+	            if (this.Player.GetSpellRank("Shadow Word: Pain") != 0 && this.Target.HealthPercent >= 5 && this.Player.ManaPercent >= 10 && this.Player.IsChanneling == "" && this.Player.IsCasting == "")
 	            {
 	                if (!this.Target.GotDebuff("Shadow Word: Pain"))
 	                {
@@ -306,22 +309,22 @@ namespace ShadyForm
 		            }
 	        	}
 
-	            if (this.Player.GetSpellRank("Mind Flay") != 0 && useShadowForm == true)
+	            if (this.Player.GetSpellRank("Mind Flay") != 0)
 	            {
 	                if (this.Player.CanUse("Mind Flay") && this.Target.HealthPercent >= healthP && this.Player.IsChanneling != "Mind Flay" && this.Player.IsCasting != "Mind Flay" && this.Player.ManaPercent >= 10)
 	                {
-	                    //this.Player.StopWand();
+	                    this.Player.StopWand();
 	                    this.Player.CastWait("Mind Flay", 2500);
 	                }
 	            }
-	        }
+	        //}
         }
 
         public void DefensiveSpells()
         {
 
         	if((!this.Player.GotBuff("Power Word: Shield") && !this.Player.GotDebuff("Weakened Soul")) ||
-        		this.Player.HealthPercent <= 35 ||
+        		this.Player.HealthPercent <= 40 ||
         		!this.Player.GotBuff("Inner Fire"))
         	{
         		
@@ -338,7 +341,7 @@ namespace ShadyForm
 	                }
 	            }
 
-				if (this.Player.HealthPercent <= 35)
+				if (this.Player.HealthPercent <= 40)
 	            {
 	            	if (this.Player.GetSpellRank("Flash Heal") != 0 && this.Player.ManaPercent >= 60)
 	                {
@@ -383,7 +386,7 @@ namespace ShadyForm
             bool canWand = this.Player.IsWandEquipped();
 
             MultipleEnemies();
-	    DefensiveSpells();
+	        DefensiveSpells();
             OffensiveSpells();
             SelectMPotion();
             SelectHPotion();
